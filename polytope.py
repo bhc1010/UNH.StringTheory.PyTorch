@@ -10,17 +10,11 @@ class Polytope:
         self.translations = []
 
     def generateData(self):
-        #### Imbed vectors into R^(imbeddingDim)
-        #if len(self.verts) != self.imbeddingDim:
-        #    for i in range(len(self.verts), self.imbeddingDim, 1):
-        #        self.verts.append((0,0))
-
         temp = []
         for p in multiset_permutations(self.verts):
             temp.append(p)
         self.verts = temp
         self.translations.append(self.verts)
-
         #### Construct transformations of base vectors and place each in a list wrapped in a master list
         ## Reflection across y = x
         transformation = []
@@ -92,22 +86,13 @@ class Polytope:
                 vect.append([x,y])
             transformation.append(vect)
         self.translations.append(transformation)
-
         #### Fill each transformation list with it's permutations
-
-        # for T in self.translations:
-        #     for vect in T:
-        #         if len(vect) != self.imbeddingDim:
-        #             for i in range(len(vect), self.imbeddingDim, 1):
-        #                 vect.append([0,0])
-
         for idx, T in enumerate(self.translations):
             if len(self.verts[0]) != self.imbeddingDim:
                 R = []
                 for v in T:
                     vect = []
                     vect += v
-                #if len(v) != self.imbeddingDim:
                     for i in range(0, self.imbeddingDim - len(v) + 1):
                         if i != 0:
                             for k in range(i):
@@ -117,10 +102,8 @@ class Polytope:
                         R.append(vect)
                         vect = []
                         vect += v
-
                 self.translations[idx] = R
                 R = []
-
         ### Vectorize each data point with it's 'picard number'
         R = []
         data = []
@@ -130,12 +113,3 @@ class Polytope:
             data.append(R)
             R = []
         self.translations = data
-
-        # for index, T in enumerate(self.translations):
-        #     print("{}: ".format(index))
-        #     for v in T:
-        #         print(v)
-
-# poly = Polytope([[0,1],[1,0],[-1,-1]], 1, 5)
-# poly.generateData()
-# print(7*len(poly.translations[0]))
