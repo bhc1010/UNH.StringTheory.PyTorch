@@ -1,16 +1,19 @@
 import torch
 import random
 import numpy as np
-import polytope
+from tqdm import tqdm
 
 def loadData(polytopes, batch_size):
     train_data_raw, train_pBatches, train_batches, train_labels = [], [], [], []
     test_data_raw, test_pBatches, test_batches, test_labels = [], [], [], []
 
-    for poly in polytopes:
+    print("Generating data:")
+    for poly in tqdm(polytopes):
+        poly.generateData()
         random.shuffle(poly.translations)
 
-    for poly in polytopes:
+    print("Compiling data:")
+    for poly in tqdm(polytopes):
         # Splitting random translations into training and testing (Can switch for 80-20 instead)
         for idx, T in enumerate(poly.translations):
             if idx <= len(poly.translations) - 3:
@@ -18,7 +21,8 @@ def loadData(polytopes, batch_size):
             else:
                 test_data_raw += T
 
-    for poly in polytopes:
+    print("Batching packaged data:")
+    for poly in tqdm(polytopes):
         # Batching packaged data
         for _ in range(3):
             random.shuffle(train_data_raw)
@@ -26,7 +30,8 @@ def loadData(polytopes, batch_size):
         train_pBatches += [train_data_raw[k:k + batch_size] for k in range(0, len(train_data_raw), batch_size)]
         test_pBatches += [test_data_raw[k:k + batch_size] for k in range(0, len(test_data_raw), batch_size)]
 
-    for b in train_pBatches:
+    print("Splitting train data:")
+    for b in tqdm(train_pBatches):
         batch, labels = [], []
         for packagedV in b:
             batch.append(packagedV[0])
@@ -34,7 +39,8 @@ def loadData(polytopes, batch_size):
         train_batches.append(batch)
         train_labels.append(labels)
 
-    for b in test_pBatches:
+    print("Splitting test data:")
+    for b in tqdm(test_pBatches):
         batch, labels = [], []
         for packagedV in b:
             batch.append(packagedV[0])
@@ -42,9 +48,7 @@ def loadData(polytopes, batch_size):
         test_batches.append(batch)
         test_labels.append(labels)
 
-    train_batches = torch.tensor(train_batches)
-    train_labels = torch.tensor(train_labels)
-    test_batches = torch.tensor(test_batches)
-    test_labels = torch.tensor(test_labels)
+    train_data = (torch.tensor(train_batches), torch.tensor(train_labels))
+    test_data = (torch.tensor(test_batches), torch.tensor(test_labels))
 
-    return train_batches, train_labels, test_batches, test_labels
+    return train_data, test_data
